@@ -1,0 +1,128 @@
+name: API Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Run tests with Maven
+      run: mvn clean test
+
+    - name: Install Allure
+      uses: FedericoCarboni/setup-allure@v1
+      with:
+        version: '2.24.0'
+
+    - name: Generate Allure Report
+      run: mvn allure:report
+      if: success() || failure()
+
+    - name: Serve Allure Report
+      run: |
+        mkdir -p allure-results-maven
+        cp -r target/site/allure-maven-plugin/* allure-results-maven/ || echo "Generating live report..."
+        # Serve the report temporarily to make sure it works
+        nohup allure serve target/site/allure-maven-plugin > allure_serve.log 2>&1 &
+        sleep 10
+        cat allure_serve.log || echo "Allure serve completed"
+      if: success() || failure()
+
+    - name: Upload Allure Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: allure-report
+        path: allure-results-maven
+      if: success() || failure()
+
+  test-gradle:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/build.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
+
+    - name: Run tests with Gradle
+      run: ./gradlew test
+
+    - name: Install Allure
+      uses: FedericoCarboni/setup-allure@v1
+      with:
+        version: '2.24.0'
+
+    - name: Generate Allure Report with Gradle
+      run: ./gradlew allureReport
+      if: success() || failure()
+
+    - name: Serve Allure Report
+      run: |
+        mkdir -p allure-results-gradle
+        cp -r build/reports/allure-report/* allure-results-gradle/ || echo "Generating live report..."
+        # Serve the report temporarily to make sure it works
+        nohup allure serve build/reports/allure-report > allure_serve.log 2>&1 &
+        sleep 10
+        cat allure_serve.log || echo "Allure serve completed"
+      if: success() || failure()
+
+    - name: Upload Allure Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: allure-report-gradle
+        path: allure-results-gradle
+      if: success() || failure()
+
+  security-scan:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run OWASP Dependency Check
+      uses: dependency-check/DependencyCheckAction@v3
+      with:
+        project: 'StockBit API'
+        path: '.'
+        format: 'HTML'
+        out: 'reports'
+
+    - name: Upload Security Scan Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-scan-results
+        path: reports
