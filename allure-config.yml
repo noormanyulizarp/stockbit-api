@@ -1,0 +1,6 @@
+allure:
+  version: 2.24.0
+  results:
+    directory: target/allure-results
+  report:
+    directory: target/site/allure-maven-plugin
