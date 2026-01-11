@@ -90,3 +90,20 @@ Feature: Person Management API
     And the persons API response should be successful
     And verify all persons have field "website"
     And verify all persons have field "image"
+
+  @negative @TC_PERSON_09
+  Scenario: Verify maximum quantity limit is capped at 1000
+    When send GET request to endpoint PERSONS with query parameter "_quantity" as "5000"
+    Then verify status code is "SUCCESS"
+    And verify list "data" has maximum 1000 items
+
+  @negative @TC_PERSON_10
+  Scenario: Verify API accepts any gender value
+    When send GET request to endpoint PERSONS with query parameter "_gender" as "nonbinary"
+    Then verify status code is "SUCCESS"
+    And verify all persons have gender "nonbinary"
+
+  @negative @TC_PERSON_11
+  Scenario: Invalid endpoint returns 404
+    When send GET request to endpoint path "/api/v2/invalid"
+    Then verify status code is "NOT_FOUND"
