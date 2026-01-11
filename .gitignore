@@ -40,7 +40,6 @@ temp-test-resources/
 # Additional directories to ignore
 .allure/
 .claude/
-.github/
 .gradle/
 build/
 nul
