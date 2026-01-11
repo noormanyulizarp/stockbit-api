@@ -26,31 +26,24 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
-    - name: Install Allure
-      uses: allure-framework/setup-allure@v1
+    - name: Run tests with Maven
+      run: mvn clean test
+
+    - name: Generate Allure report
+      uses: simple-elf/allure-report-action@master
+      if: always()
       with:
-        version: '2.24.0'
+        allure_results: target/allure-results
+        allure_history: allure-history
+        keep_reports: 20
 
-    - name: Generate Allure Report
-      run: mvn allure:report
-      if: success() || failure()
-
-    - name: Serve Allure Report
-      run: |
-        mkdir -p allure-results-maven
-        cp -r target/site/allure-maven-plugin/* allure-results-maven/ || echo "Generating live report..."
-        # Serve the report temporarily to make sure it works
-        nohup allure serve target/site/allure-maven-plugin > allure_serve.log 2>&1 &
-        sleep 10
-        cat allure_serve.log || echo "Allure serve completed"
-      if: success() || failure()
-
-    - name: Upload Allure Report
-      uses: actions/upload-artifact@v4
-      with:
-        name: allure-report
-        path: allure-results-maven
-      if: success() || failure()
+    - name: Deploy Allure report to GitHub Pages
+      if: always()
+      uses: peaceiris/actions-gh-pages@v2
+      env:
+        PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PUBLISH_BRANCH: gh-pages
+        PUBLISH_DIR: allure-history
 
   test-gradle:
     runs-on: ubuntu-latest
@@ -77,31 +70,21 @@ jobs:
     - name: Run tests with Gradle
       run: ./gradlew test
 
-    - name: Install Allure
-      uses: allure-framework/setup-allure@v1
+    - name: Generate Allure report
+      uses: simple-elf/allure-report-action@master
+      if: always()
       with:
-        version: '2.24.0'
+        allure_results: build/allure-results
+        allure_history: allure-history
+        keep_reports: 20
 
-    - name: Generate Allure Report with Gradle
-      run: ./gradlew allureReport
-      if: success() || failure()
-
-    - name: Serve Allure Report
-      run: |
-        mkdir -p allure-results-gradle
-        cp -r build/reports/allure-report/* allure-results-gradle/ || echo "Generating live report..."
-        # Serve the report temporarily to make sure it works
-        nohup allure serve build/reports/allure-report > allure_serve.log 2>&1 &
-        sleep 10
-        cat allure_serve.log || echo "Allure serve completed"
-      if: success() || failure()
-
-    - name: Upload Allure Report
-      uses: actions/upload-artifact@v4
-      with:
-        name: allure-report-gradle
-        path: allure-results-gradle
-      if: success() || failure()
+    - name: Deploy Allure report to GitHub Pages
+      if: always()
+      uses: peaceiris/actions-gh-pages@v2
+      env:
+        PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PUBLISH_BRANCH: gh-pages
+        PUBLISH_DIR: allure-history
 
   security-scan:
     runs-on: ubuntu-latest
@@ -111,7 +94,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Run OWASP Dependency Check
-      uses: dependency-check/DependencyCheckAction@v3
+      uses: dependency-check/Dependency-Check_Action@main
       with:
         project: 'StockBit API'
         path: '.'
