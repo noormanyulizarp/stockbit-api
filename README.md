@@ -315,15 +315,48 @@ When send GET request to endpoint path "/api/v2/invalid"
 Then verify status code is "NOT_FOUND"
 ```
 
-## Design Patterns
+## Design Patterns Used
 
-| Pattern | Purpose | Location |
-|---------|---------|----------|
-| **Service Layer Pattern** | Abstraction between steps and API calls | `services/` |
-| **POJO Pattern** | Type-safe response handling | `api/response/` |
-| **Singleton Pattern** | Shared state management | `TestContext.java` |
-| **Enum Pattern** | Standardized endpoint/status codes | `enums/` |
-| **Retry Pattern** | Handle rate limits automatically | `RetryHelper.java` |
+This framework leverages several design patterns to ensure scalability, maintainability, and readability of the API tests.
+
+### 1. Service Layer (API Abstraction)
+
+Similar to the Page Object Model (POM) in UI automation, this framework uses a **Service Layer** to abstract API endpoint interactions.
+
+-   **Structure**: Each API resource (e.g., `Users`, `Products`) has a corresponding `Service` class located in the `src.test.java.com.stockbit.api.services` package.
+-   **Responsibility**: These service classes are responsible for creating and sending API requests (including headers, parameters, and body) and deserializing the responses into Data Transfer Objects (DTOs).
+-   **Benefit**: This encapsulates endpoint logic, separates test logic from API interaction logic, and reduces code duplication. Changes to an API endpoint only need to be updated in one place—the corresponding service class.
+
+### 2. Singleton Pattern
+
+The `Config.java` class implements the Singleton pattern to manage global configuration properties.
+
+-   **Structure**: It provides a static `getInstance()` method to get the single instance of the class.
+-   **Responsibility**: It loads properties from `config.properties` once and provides a global point of access to configuration data like base URLs and API keys.
+-   **Benefit**: This prevents redundant property loading and ensures consistent configuration across the entire test suite.
+
+### 3. Data Transfer Object (DTO)
+
+The framework uses DTOs to model the JSON data returned by the APIs.
+
+-   **Structure**: Plain Old Java Objects (POJOs) located in the `src.test.java.com.stockbit.api.api.response` package represent the structure of API responses.
+-   **Responsibility**: These objects are used by Jackson or Gson to automatically deserialize JSON responses into type-safe Java objects.
+-   **Benefit**: This makes response validation cleaner, more readable, and less error-prone compared to parsing raw JSON strings.
+
+### 4. Context Object Pattern
+
+To share state between different steps within a single Cucumber scenario, the framework uses a `TestContext` object.
+
+-   **Structure**: The `TestContext.java` class acts as a container for objects that need to be passed between steps (e.g., storing an API response in a "When" step and retrieving it in a "Then" step).
+-   **Responsibility**: It holds the shared state for the duration of a single test scenario.
+-   **Benefit**: This decouples step definition classes from each other, making them more modular and reusable, and avoids the use of static variables for state sharing.
+
+### 5. Behavior-Driven Development (BDD)
+
+The entire framework is built around the BDD paradigm using Cucumber.
+
+-   **Structure**: Tests are written in a human-readable language called Gherkin in `.feature` files. These are then linked to executable code in the `steps` packages.
+-   **Benefit**: BDD improves communication between technical and non-technical stakeholders and ensures that tests are written from the perspective of the user's behavior.
 
 ## Code Conventions
 
