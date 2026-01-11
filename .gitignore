@@ -1,0 +1,46 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Allure Reports
+allure-results/
+allure-report/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+
+# Logs
+*.log
+target/test-logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+*.ser
+temp-test-resources/
+
+# Additional directories to ignore
+.allure/
+.claude/
+.github/
+.gradle/
+build/
+nul
