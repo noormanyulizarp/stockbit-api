@@ -40,3 +40,20 @@ Feature: Image Management API
     And verify all items have field "url"
     And verify all items have field "title"
     And verify all items have field "description"
+
+  @negative @TC_IMAGE_05
+  Scenario: Verify maximum quantity limit is capped at 1000
+    When send GET request to endpoint IMAGES with query parameter "_quantity" as "5000"
+    Then verify status code is "SUCCESS"
+    And verify list "data" has maximum 1000 items
+
+  @negative @TC_IMAGE_06
+  Scenario: Verify default quantity for non-numeric quantity
+    When send GET request to endpoint IMAGES with query parameter "_quantity" as "invalid"
+    Then verify status code is "SUCCESS"
+    And verify list "data" has 10 items
+
+  @negative @TC_IMAGE_07
+  Scenario: Invalid endpoint returns 404
+    When send GET request to endpoint path "/api/v2/invalid"
+    Then verify status code is "NOT_FOUND"
