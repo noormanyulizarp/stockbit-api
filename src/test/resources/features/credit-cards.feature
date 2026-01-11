@@ -42,3 +42,20 @@ Feature: Credit Card Management API
     And verify all items have field "expiration"
     And verify all items have field "type"
     And verify all items have field "owner"
+
+  @negative @TC_CREDITCARD_05
+  Scenario: Verify maximum quantity limit is capped at 1000
+    When send GET request to endpoint CREDIT_CARDS with query parameter "_quantity" as "2000"
+    Then verify status code is "SUCCESS"
+    And verify list "data" has maximum 1000 items
+
+  @negative @TC_CREDITCARD_06
+  Scenario: Verify default quantity for negative quantity
+    When send GET request to endpoint CREDIT_CARDS with query parameter "_quantity" as "-10"
+    Then verify status code is "SUCCESS"
+    And verify list "data" has 10 items
+
+  @negative @TC_CREDITCARD_07
+  Scenario: Invalid endpoint returns 404
+    When send GET request to endpoint path "/api/v2/invalid"
+    Then verify status code is "NOT_FOUND"
