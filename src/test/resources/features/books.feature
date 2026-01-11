@@ -48,3 +48,20 @@ Feature: Book Management API
     And verify all items have field "author"
     And verify all items have field "genre"
     And verify all items have field "published"
+
+  @negative @TC_BOOK_05
+  Scenario: Verify maximum quantity limit is capped at 1000
+    When send GET request to endpoint BOOKS with query parameter "_quantity" as "5000"
+    Then verify status code is "SUCCESS"
+    And verify list "data" has maximum 1000 items
+
+  @negative @TC_BOOK_06
+  Scenario: Verify default quantity returned for invalid quantity
+    When send GET request to endpoint BOOKS with query parameter "_quantity" as "abc"
+    Then verify status code is "SUCCESS"
+    And verify list "data" has 10 items
+
+  @negative @TC_BOOK_07
+  Scenario: Invalid endpoint returns 404
+    When send GET request to endpoint path "/api/v2/invalid"
+    Then verify status code is "NOT_FOUND"
