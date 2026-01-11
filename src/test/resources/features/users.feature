@@ -77,3 +77,20 @@ Feature: User Management API
     And verify all users have valid IP address format
     And verify all users have valid MAC address format
     And verify all users have valid website URL format
+
+  @negative @TC_USER_07
+  Scenario: Verify maximum quantity limit is capped at 1000
+    When send GET request to endpoint USERS with query parameter "_quantity" as "1500"
+    Then verify status code is "SUCCESS"
+    And verify list "data" has maximum 1000 items
+
+  @negative @TC_USER_08
+  Scenario: Verify default quantity returned for invalid quantity
+    When send GET request to endpoint USERS with query parameter "_quantity" as "0"
+    Then verify status code is "SUCCESS"
+    And verify list "data" has 10 items
+
+  @negative @TC_USER_09
+  Scenario: Invalid endpoint returns 404
+    When send GET request to endpoint path "/api/v2/invalid"
+    Then verify status code is "NOT_FOUND"
