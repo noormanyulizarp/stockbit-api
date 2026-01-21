@@ -48,13 +48,39 @@ public class CommonSteps {
     @When("send GET request to {string} with query parameter {string} as {string}")
     public void sendGetRequestWithQueryParam(String endpoint, String paramKey, String paramValue) {
         String endpointName = serviceHelper.extractEndpointName(endpoint);
-        ApiResponse<?> response = serviceHelper.callServiceWithParam(endpointName, paramKey, paramValue);
+
+        if (endpointName.equals("USERS") && "_quantity".equals(paramKey)) {
+            ApiResponse<?> response = serviceHelper.callService(endpointName, Integer.parseInt(paramValue));
+            context.set("lastResponse", response);
+            return;
+        }
+        if (endpointName.equals("PERSONS") && "_quantity".equals(paramKey)) {
+            ApiResponse<?> response = serviceHelper.callService(endpointName, Integer.parseInt(paramValue));
+            context.set("lastResponse", response);
+            return;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put(paramKey, paramValue);
+        ApiResponse<?> response = serviceHelper.callService(endpointName, params);
         context.set("lastResponse", response);
     }
 
     @When("send GET request to endpoint {word} with query parameter {string} as {string}")
     public void sendGetRequestToEndpointWithQueryParam(String endpointName, String paramKey, String paramValue) {
-        ApiResponse<?> response = serviceHelper.callServiceWithParam(endpointName, paramKey, paramValue);
+        // Special handling for USERS endpoint with _quantity, _locale, _seed
+        if (endpointName.equals("USERS") && "_quantity".equals(paramKey)) {
+            ApiResponse<?> response = serviceHelper.callService(endpointName, Integer.parseInt(paramValue));
+            context.set("lastResponse", response);
+            return;
+        }
+        if (endpointName.equals("PERSONS") && "_quantity".equals(paramKey)) {
+            ApiResponse<?> response = serviceHelper.callService(endpointName, Integer.parseInt(paramValue));
+            context.set("lastResponse", response);
+            return;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put(paramKey, paramValue);
+        ApiResponse<?> response = serviceHelper.callService(endpointName, params);
         context.set("lastResponse", response);
     }
 
@@ -62,14 +88,14 @@ public class CommonSteps {
     public void sendGetRequestWithQueryParams(String endpoint, Map<String, String> params) {
         String endpointName = serviceHelper.extractEndpointName(endpoint);
         Map<String, Object> objectParams = new HashMap<>(params);
-        ApiResponse<?> response = serviceHelper.callServiceWithParams(endpointName, objectParams);
+        ApiResponse<?> response = serviceHelper.callService(endpointName, objectParams);
         context.set("lastResponse", response);
     }
 
     @When("send GET request to endpoint {word} with query parameters:")
     public void sendGetRequestToEndpointWithQueryParams(String endpointName, Map<String, String> params) {
         Map<String, Object> objectParams = new HashMap<>(params);
-        ApiResponse<?> response = serviceHelper.callServiceWithParams(endpointName, objectParams);
+        ApiResponse<?> response = serviceHelper.callService(endpointName, objectParams);
         context.set("lastResponse", response);
     }
 
